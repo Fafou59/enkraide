@@ -14,9 +14,7 @@ Seul le dossier `site/` est publié.
 
 ## Publier (Cloudflare Pages)
 
-```bash
-npx wrangler pages deploy site --project-name enkraide --branch main
-```
+Cloudflare Pages est branché sur ce dépôt GitHub : chaque push sur `main` republie le site. Réglages du projet Pages : aucune commande de build, dossier de sortie `site`.
 
 ## Ajouter une Région
 
