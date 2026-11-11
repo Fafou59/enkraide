@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Enkraide">
+<title>Enkraide</title>
+<style>
+  :root {
+    --fond: #f6f7f9; --carte: #ffffff; --texte: #1c2430; --doux: #5b6675; --bord: #dde2e8;
+    --primaire: #0f766e; --primaire-texte: #ffffff; --primaire-doux: #dff2ef;
+    --ok: #15803d; --ok-fond: #dcfce7;
+    --faux: #b91c1c; --faux-fond: #fee2e2;
+    --oubli: #b45309; --oubli-fond: #fef3c7;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fond: #0f1419; --carte: #1a2129; --texte: #e6eaef; --doux: #9aa5b1; --bord: #2c3640;
+      --primaire: #2dd4bf; --primaire-texte: #062b27; --primaire-doux: #143c37;
+      --ok: #4ade80; --ok-fond: #12301f;
+      --faux: #f87171; --faux-fond: #3a1717;
+      --oubli: #fbbf24; --oubli-fond: #3a2a0c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--fond); color: var(--texte);
+         font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  #app { max-width: 520px; margin: 0 auto; min-height: 100dvh;
+         padding: 16px 16px calc(32px + env(safe-area-inset-bottom));
+         display: flex; flex-direction: column; gap: 14px; }
+  h1, h2, p { margin: 0; }
+  h1, h2 { line-height: 1.2; }
+  .doux { color: var(--doux); }
+  .petit { font-size: 14px; }
+  .centre { text-align: center; }
+  .carte { background: var(--carte); border: 1px solid var(--bord); border-radius: 16px; padding: 16px; }
+
+  button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .principal { background: var(--primaire); color: var(--primaire-texte); border: 0; border-radius: 12px;
+               padding: 14px 18px; font-weight: 650; }
+  .principal:disabled { opacity: .4; cursor: default; }
+  .secondaire { background: transparent; border: 1px solid var(--bord); border-radius: 12px;
+                padding: 14px 18px; font-weight: 650; }
+  .grand { width: 100%; }
+  .lien { background: none; border: 0; color: var(--doux); text-decoration: underline; padding: 8px; }
+
+  /* Accueil & bilan */
+  .entete { text-align: center; padding: 28px 0 6px; }
+  .entete h1 { font-size: 40px; letter-spacing: -.02em; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
+  .stats strong { display: block; font-size: 28px; font-variant-numeric: tabular-nums; }
+  .stats span { font-size: 13px; color: var(--doux); }
+  .pied { margin-top: auto; text-align: center; padding-top: 24px; }
+  .rates { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .rates li { display: flex; flex-direction: column; border-top: 1px solid var(--bord); padding-top: 10px; }
+  .rates li:first-child { border-top: 0; padding-top: 0; }
+  .rates span { color: var(--doux); font-size: 15px; }
+
+  /* Question */
+  .barre { display: flex; align-items: center; gap: 10px; }
+  .barre .lien { text-decoration: none; font-size: 20px; padding: 4px 8px; }
+  .progression { flex: 1; height: 8px; background: var(--bord); border-radius: 99px; overflow: hidden; }
+  .progression div { height: 100%; background: var(--primaire); transition: width .3s; }
+  .compteur { font-variant-numeric: tabular-nums; color: var(--doux); font-size: 14px; }
+  .enchainement { text-align: center; font-weight: 650; color: var(--oubli); min-height: 1.45em; }
+  .muscle { text-align: center; padding: 26px 16px; }
+  .muscle h1 { font-size: 30px; margin-top: 4px; }
+  .etape { display: flex; flex-direction: column; gap: 10px; }
+  .etape h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .07em; color: var(--doux); }
+
+  .puces { display: flex; flex-wrap: wrap; gap: 8px; }
+  .puces:empty { display: none; }
+  .puce { display: inline-flex; align-items: center; gap: 4px; background: var(--primaire-doux);
+          border-radius: 99px; padding: 6px 4px 6px 12px; font-size: 15px; }
+  .puce button { border: 0; background: transparent; width: 28px; height: 28px; border-radius: 50%;
+                 font-size: 18px; line-height: 1; color: var(--doux); }
+  #saisie { width: 100%; font: inherit; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--bord);
+            background: var(--carte); color: var(--texte); }
+  #saisie:focus { outline: 2px solid var(--primaire); outline-offset: -1px; }
+  #suggestions { list-style: none; margin: 6px 0 0; padding: 4px; background: var(--carte);
+                 border: 1px solid var(--bord); border-radius: 12px; }
+  #suggestions[hidden] { display: none; }
+  #suggestions li { padding: 11px 12px; border-radius: 8px; cursor: pointer; }
+  #suggestions li.actif { background: var(--primaire-doux); }
+  #suggestions li.vide { color: var(--doux); cursor: default; }
+
+  .resultats { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .resultats li { padding: 10px 12px; border-radius: 10px; }
+  .ok { background: var(--ok-fond); color: var(--ok); }
+  .faux { background: var(--faux-fond); color: var(--faux); }
+  .oubli { background: var(--oubli-fond); color: var(--oubli); }
+  .bandeau { font-weight: 700; }
+  .bandeau.bon { color: var(--ok); }
+  .bandeau.mauvais { color: var(--faux); }
+
+  .grille { display: flex; flex-direction: column; gap: 8px; }
+  .rangee { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .racine { padding: 13px 0; border-radius: 10px; border: 1px solid var(--bord); background: var(--carte);
+            font-weight: 650; font-variant-numeric: tabular-nums; }
+  .racine[aria-pressed="true"] { background: var(--primaire); color: var(--primaire-texte); border-color: var(--primaire); }
+  .racine:disabled { cursor: default; }
+  .racine.ok { background: var(--ok-fond); color: var(--ok); border-color: var(--ok); }
+  .racine.faux { background: var(--faux-fond); color: var(--faux); border-color: var(--faux); }
+  .racine.oubli { background: var(--oubli-fond); color: var(--oubli); border-color: var(--oubli); border-style: dashed; }
+  .racine.neutre { opacity: .45; }
+  .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--doux); }
+  .legende i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .legende i.ok { background: var(--ok); }
+  .legende i.faux { background: var(--faux); }
+  .legende i.oubli { background: var(--oubli); }
+  .verdict { text-align: center; font-size: 21px; font-weight: 750; padding: 18px 16px; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<!-- Une ligne par Région : ajouter le fichier dans donnees/ puis une balise ici. -->
+<script src="donnees/hanche.js"></script>
+
+<script>
+(() => {
+  'use strict';
+
+  const TAILLE_SERIE = 10;
+  const BOITE_MAX = 5;          // répétition espacée : boîte 1 = à revoir, 5 = maîtrisé depuis longtemps
+  const BOITE_MAITRISE = 4;
+  const MIN_CARACTERES = 3;
+  const CLE_STOCKAGE = 'enkraide.v1';
+  const ORDRE_RACINES = [
+    ...[1, 2, 3, 4, 5, 6, 7, 8].map(n => 'C' + n),
+    ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => 'T' + n),
+    ...[1, 2, 3, 4, 5].map(n => 'L' + n),
+    ...[1, 2, 3, 4, 5].map(n => 'S' + n),
+    'Co',
+  ];
+
+  // ---------- Données ----------
+  const norm = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/[^a-z0-9&]+/g, ' ').trim();
+  const esc = t => String(t).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function grilleDe(region) {
+    if (region.racines) return region.racines;
+    const rangs = region.muscles.flatMap(m => m.racines).map(r => ORDRE_RACINES.indexOf(r)).filter(i => i >= 0);
+    return ORDRE_RACINES.slice(Math.min(...rangs), Math.max(...rangs) + 1);
+  }
+
+  const REGIONS = window.REGIONS || [];
+  const MUSCLES = REGIONS.flatMap(r => r.muscles.map(m => ({
+    ...m, region: r.region, id: r.region + '|' + m.muscle, grille: grilleDe(r),
+  })));
+
+  const CATALOGUE = [];
+  for (const nom of MUSCLES.flatMap(m => m.nerfs)) {
+    const n = norm(nom);
+    if (!CATALOGUE.some(c => c.n === n)) CATALOGUE.push({ nom, n, mots: n.split(' ') });
+  }
+  CATALOGUE.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+
+  // ---------- Progression (sur l'appareil) ----------
+  function charger() {
+    try {
+      const d = JSON.parse(localStorage.getItem(CLE_STOCKAGE));
+      if (d && typeof d === 'object') return { boites: d.boites || {}, meilleurEnchainement: d.meilleurEnchainement || 0 };
+    } catch (e) { /* stockage indisponible */ }
+    return { boites: {}, meilleurEnchainement: 0 };
+  }
+  function sauver() {
+    try { localStorage.setItem(CLE_STOCKAGE, JSON.stringify(prog)); } catch (e) { /* tant pis */ }
+  }
+  let prog = charger();
+  let enchainement = 0;
+  const boite = m => prog.boites[m.id] || 1;
+
+  // Tirage pondéré sans remise : un muscle à revoir (boîte 1) pèse 16 fois plus qu'un muscle maîtrisé (boîte 5).
+  function tirerSerie(taille) {
+    const reserve = MUSCLES.slice();
+    const serie = [];
+    while (serie.length < taille && reserve.length) {
+      const poids = reserve.map(m => 2 ** (BOITE_MAX - boite(m)));
+      let r = Math.random() * poids.reduce((a, b) => a + b, 0);
+      let i = 0;
+      while (i < reserve.length - 1 && r >= poids[i]) { r -= poids[i]; i++; }
+      serie.push(reserve.splice(i, 1)[0]);
+    }
+    return serie;
+  }
+
+  // ---------- État de la Série en cours ----------
+  const app = document.getElementById('app');
+  let s = null;
+  const courant = () => s.serie[s.i];
+
+  // ---------- Écrans ----------
+  function accueil() {
+    s = null;
+    const total = MUSCLES.length;
+    if (!total) {
+      app.innerHTML = '<header class="entete"><h1>Enkraide</h1></header><p class="centre doux">Aucune donnée chargée.</p>';
+      return;
+    }
+    const maitrises = MUSCLES.filter(m => boite(m) >= BOITE_MAITRISE).length;
+    const vus = MUSCLES.filter(m => prog.boites[m.id]).length;
+    app.innerHTML = `
+      <header class="entete"><h1>Enkraide</h1><p class="doux">Innervation des muscles</p></header>
+      <section class="carte stats">
+        <div><strong>${maitrises}</strong><span>maîtrisés</span></div>
+        <div><strong>${vus}</strong><span>déjà vus</span></div>
+        <div><strong>${total}</strong><span>au total</span></div>
+      </section>
+      <p class="doux centre">Meilleur enchaînement : <strong>${prog.meilleurEnchainement}</strong></p>
+      <button class="principal grand" data-action="demarrer">Commencer une série</button>
+      <p class="doux petit centre">${Math.min(TAILLE_SERIE, total)} muscles tirés au hasard. Ceux que tu rates reviennent plus souvent.</p>
+      <footer class="pied">
+        <p class="doux petit">${REGIONS.map(r => `${esc(r.region)} (${r.muscles.length})`).join(' · ')}</p>
+        <button class="lien petit" data-action="raz">Réinitialiser ma progression</button>
+      </footer>`;
+    window.scrollTo(0, 0);
+  }
+
+  function demarrer() {
+    s = { serie: tirerSerie(Math.min(TAILLE_SERIE, MUSCLES.length)), i: 0, sus: [], rates: [] };
+    nouveauMuscle();
+  }
+
+  function nouveauMuscle() {
+    Object.assign(s, { etape: 'nerf', choisis: [], sugg: [], actif: 0, okNerf: null, cochees: new Set(), okRacines: null });
+    question();
+    window.scrollTo(0, 0);
+    focusSaisie();
+  }
+
+  function question() {
+    const m = courant();
+    const n = s.serie.length;
+    const fait = s.i + (s.etape === 'racines-resultat' ? 1 : 0);
+    app.innerHTML = `
+      <header class="barre">
+        <button class="lien" data-action="quitter" aria-label="Quitter la série">✕</button>
+        <div class="progression"><div style="width:${fait / n * 100}%"></div></div>
+        <span class="compteur">${s.i + 1}/${n}</span>
+      </header>
+      <p class="enchainement">${enchainement ? `🔥 ${enchainement} d'affilée` : ''}</p>
+      <section class="carte muscle">
+        <span class="doux petit">${esc(m.region)}</span>
+        <h1>${esc(m.muscle)}</h1>
+      </section>
+      ${blocNerf(m)}
+      ${s.etape.startsWith('racines') ? blocRacines(m) : ''}`;
+  }
+
+  function blocNerf(m) {
+    if (s.etape === 'nerf') {
+      return `
+        <section class="etape">
+          <h2>Nerf${m.nerfs.length > 1 ? 's' : ''}</h2>
+          <div class="puces">${s.choisis.map((c, i) => `
+            <span class="puce">${esc(c)}<button data-action="retirer" data-i="${i}" aria-label="Retirer ${esc(c)}">×</button></span>`).join('')}</div>
+          <div class="champ">
+            <input id="saisie" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   enterkeyhint="done" placeholder="${s.choisis.length ? 'Un autre nerf ?' : 'Tape au moins 3 lettres…'}"
+                   role="combobox" aria-autocomplete="list" aria-controls="suggestions" aria-label="Nerf">
+            <ul id="suggestions" role="listbox" hidden></ul>
+          </div>
+          <button class="principal grand" data-action="repondre-nerf" ${s.choisis.length ? '' : 'disabled'}>Répondre</button>
+        </section>`;
+    }
+    const attendus = m.nerfs.map(norm);
+    const lignes = [
+      ...s.choisis.map(c => attendus.includes(norm(c))
+        ? `<li class="ok">✓ ${esc(c)}</li>`
+        : `<li class="faux">✗ ${esc(c)}</li>`),
+      ...m.nerfs.filter(nf => !s.choisis.some(c => norm(c) === norm(nf)))
+        .map(nf => `<li class="oubli">＋ ${esc(nf)} <span class="petit">(oublié)</span></li>`),
+    ];
+    return `
+      <section class="etape">
+        <h2>Nerf${m.nerfs.length > 1 ? 's' : ''}</h2>
+        <p class="bandeau ${s.okNerf ? 'bon' : 'mauvais'}">${s.okNerf ? 'Bon nerf !' : 'Pas tout à fait…'}</p>
+        <ul class="resultats">${lignes.join('')}</ul>
+        ${s.etape === 'nerf-resultat' ? '<button class="principal grand" data-action="vers-racines">Racines →</button>' : ''}
+      </section>`;
+  }
+
+  function blocRacines(m) {
+    const resultat = s.etape === 'racines-resultat';
+    const rangees = [];
+    for (const r of m.grille) {
+      const lettre = r.replace(/\d+/, '');
+      const derniere = rangees[rangees.length - 1];
+      if (derniere && derniere.lettre === lettre) derniere.racines.push(r);
+      else rangees.push({ lettre, racines: [r] });
+    }
+    const bouton = r => {
+      if (!resultat) {
+        return `<button class="racine" data-action="racine" data-r="${r}" aria-pressed="${s.cochees.has(r)}">${r}</button>`;
+      }
+      const attendue = m.racines.includes(r), cochee = s.cochees.has(r);
+      const classe = attendue && cochee ? 'ok' : cochee ? 'faux' : attendue ? 'oubli' : 'neutre';
+      return `<button class="racine ${classe}" disabled>${r}</button>`;
+    };
+    const su = s.okNerf && s.okRacines;
+    return `
+      <section class="etape" id="racines">
+        <h2>Racines</h2>
+        ${resultat ? `<p class="bandeau ${s.okRacines ? 'bon' : 'mauvais'}">${s.okRacines ? 'Bonnes racines !' : 'Pas tout à fait…'}</p>` : ''}
+        <div class="grille">${rangees.map(g => `<div class="rangee">${g.racines.map(bouton).join('')}</div>`).join('')}</div>
+        ${resultat ? `
+          <p class="legende"><span><i class="ok"></i>juste</span><span><i class="faux"></i>en trop</span><span><i class="oubli"></i>oubliée</span></p>
+          <p class="carte verdict ${su ? 'ok' : 'faux'}" id="verdict">${su ? `Muscle su ! 🎉${enchainement > 1 ? ` · 🔥 ${enchainement}` : ''}` : 'À revoir, il reviendra bientôt'}</p>
+          <button class="principal grand" data-action="suivant">${s.i + 1 < s.serie.length ? 'Muscle suivant' : 'Voir le bilan'}</button>`
+        : `<button class="principal grand" id="repondre-racines" data-action="repondre-racines" ${s.cochees.size ? '' : 'disabled'}>Répondre</button>`}
+      </section>`;
+  }
+
+  function bilan() {
+    const n = s.serie.length, ok = s.sus.length, taux = ok / n;
+    const message = taux === 1 ? 'Parfait, rien à redire !'
+      : taux >= .7 ? 'Très bien, ça rentre.'
+      : taux >= .4 ? 'Ça progresse, continue.'
+      : 'Les muscles ratés vont revenir plus souvent. Courage !';
+    app.innerHTML = `
+      <header class="entete"><h1>${ok} / ${n}</h1><p class="doux">${message}</p></header>
+      ${s.rates.length ? `
+        <section class="carte">
+          <h2>À revoir</h2>
+          <ul class="rates">${s.rates.map(m => `
+            <li><strong>${esc(m.muscle)}</strong>
+                <span>${m.nerfs.map(esc).join(' + ')}</span>
+                <span>${m.racines.join(', ')}</span></li>`).join('')}</ul>
+        </section>` : ''}
+      <p class="doux centre">Meilleur enchaînement : <strong>${prog.meilleurEnchainement}</strong></p>
+      <button class="principal grand" data-action="demarrer">Encore une série</button>
+      <button class="secondaire grand" data-action="accueil">Accueil</button>`;
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- Saisie du Nerf ----------
+  function focusSaisie() {
+    const champ = document.getElementById('saisie');
+    if (champ) champ.focus();
+  }
+
+  function chercher(texte) {
+    const q = norm(texte);
+    if (q.replace(/ /g, '').length < MIN_CARACTERES) return null;
+    const mots = q.split(' ');
+    const deja = s.choisis.map(norm);
+    return CATALOGUE
+      .filter(c => !deja.includes(c.n) && mots.every(t => c.n.includes(t)))
+      .map(c => ({ ...c, score: mots.filter(t => c.mots.some(w => w.startsWith(t))).length }))
+      .sort((a, b) => b.score - a.score || a.nom.localeCompare(b.nom, 'fr'))
+      .slice(0, 8);
+  }
+
+  function majSuggestions() {
+    const champ = document.getElementById('saisie');
+    const liste = document.getElementById('suggestions');
+    const res = chercher(champ.value);
+    s.sugg = res || [];
+    s.actif = 0;
+    champ.setAttribute('aria-expanded', String(!!res));
+    if (!res) { liste.hidden = true; liste.innerHTML = ''; return; }
+    liste.hidden = false;
+    liste.innerHTML = res.length
+      ? res.map((c, i) => `<li role="option" data-action="choisir" data-i="${i}" class="${i === 0 ? 'actif' : ''}">${esc(c.nom)}</li>`).join('')
+      : '<li class="vide">Aucun nerf ne correspond</li>';
+  }
+
+  function surligner() {
+    document.querySelectorAll('#suggestions li[data-i]').forEach(li =>
+      li.classList.toggle('actif', +li.dataset.i === s.actif));
+  }
+
+  function choisir(i) {
+    const c = s.sugg[i];
+    if (!c) return;
+    s.choisis.push(c.nom);
+    s.sugg = [];
+    question();
+    focusSaisie();
+  }
+
+  // ---------- Réponses ----------
+  function repondreNerf() {
+    const m = courant();
+    s.okNerf = s.choisis.length === m.nerfs.length && m.nerfs.every(nf => s.choisis.some(c => norm(c) === norm(nf)));
+    s.etape = 'nerf-resultat';
+    question();
+  }
+
+  function repondreRacines() {
+    const m = courant();
+    s.okRacines = s.cochees.size === m.racines.length && m.racines.every(r => s.cochees.has(r));
+    const su = s.okNerf && s.okRacines;
+    prog.boites[m.id] = su ? Math.min(BOITE_MAX, boite(m) + 1) : 1;
+    if (su) {
+      enchainement++;
+      prog.meilleurEnchainement = Math.max(prog.meilleurEnchainement, enchainement);
+      s.sus.push(m);
+    } else {
+      enchainement = 0;
+      s.rates.push(m);
+    }
+    sauver();
+    s.etape = 'racines-resultat';
+    question();
+    document.getElementById('verdict').scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  // ---------- Événements ----------
+  app.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el || el.disabled) return;
+    switch (el.dataset.action) {
+      case 'demarrer': demarrer(); break;
+      case 'accueil': accueil(); break;
+      case 'raz':
+        if (confirm('Effacer toute ta progression ?')) {
+          prog = { boites: {}, meilleurEnchainement: 0 };
+          enchainement = 0;
+          sauver();
+          accueil();
+        }
+        break;
+      case 'quitter': if (confirm('Abandonner cette série ?')) accueil(); break;
+      case 'choisir': choisir(+el.dataset.i); break;
+      case 'retirer': s.choisis.splice(+el.dataset.i, 1); question(); focusSaisie(); break;
+      case 'repondre-nerf': repondreNerf(); break;
+      case 'vers-racines':
+        s.etape = 'racines';
+        question();
+        document.getElementById('racines').scrollIntoView({ block: 'start', behavior: 'smooth' });
+        break;
+      case 'racine': {
+        const r = el.dataset.r;
+        if (s.cochees.has(r)) s.cochees.delete(r); else s.cochees.add(r);
+        el.setAttribute('aria-pressed', String(s.cochees.has(r)));
+        document.getElementById('repondre-racines').disabled = !s.cochees.size;
+        break;
+      }
+      case 'repondre-racines': repondreRacines(); break;
+      case 'suivant':
+        s.i++;
+        if (s.i < s.serie.length) nouveauMuscle(); else bilan();
+        break;
+    }
+  });
+
+  // Garde le clavier ouvert quand on touche une suggestion.
+  app.addEventListener('mousedown', e => { if (e.target.closest('#suggestions')) e.preventDefault(); });
+
+  app.addEventListener('input', e => { if (e.target.id === 'saisie') majSuggestions(); });
+
+  app.addEventListener('keydown', e => {
+    if (e.target.id !== 'saisie') return;
+    const nb = s.sugg.length;
+    if (e.key === 'ArrowDown' && nb) { e.preventDefault(); s.actif = (s.actif + 1) % nb; surligner(); }
+    else if (e.key === 'ArrowUp' && nb) { e.preventDefault(); s.actif = (s.actif - 1 + nb) % nb; surligner(); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (nb) choisir(s.actif);
+      else if (!e.target.value.trim() && s.choisis.length) repondreNerf();
+    } else if (e.key === 'Escape') { e.target.value = ''; majSuggestions(); }
+  });
+
+  accueil();
+})();
+</script>
+</body>
+</html>
