@@ -12,9 +12,11 @@ Puis ouvrir http://127.0.0.1:8765. La progression est enregistrée dans le navig
 
 Seul le dossier `site/` est publié.
 
-## Publier (Cloudflare Pages)
+## Publier (Cloudflare)
 
-Cloudflare Pages est branché sur ce dépôt GitHub : chaque push sur `main` republie le site. Réglages du projet Pages : aucune commande de build, dossier de sortie `site`.
+En ligne : https://enkraide.fabien-lesage.workers.dev
+
+Cloudflare est branché sur ce dépôt GitHub : chaque push sur `main` republie le site. Seul le contenu de `site/` est servi.
 
 ## Ajouter une Région
 
